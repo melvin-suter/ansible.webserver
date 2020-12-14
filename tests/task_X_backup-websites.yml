@@ -3,8 +3,18 @@
 - name: Webserver Setup
   hosts: localhost
   tasks:
+  - name: find all vhosts
+    find:
+      paths: /srv/www
+      file_type: directory
+      recurse: no
+    register: vhosts_found
+
   - name: include backup-website.yml
     include_tasks: 'roles/melvin_suter.webserver/tasks/independent/backup-website.yml'
     loop: "{{ lookup('fileglob', '/srv/www/*', wantlist=True) }}"
+    loop: "{{ vhosts_found.files|flatten(levels=1) }}"
+    loop_control:
+      label: "{{ item.path }}"
 
 ...
