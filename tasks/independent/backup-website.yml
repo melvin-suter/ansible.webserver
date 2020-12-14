@@ -7,6 +7,7 @@
 
 - name: include dump-config
   include_vars: "{{ vhost_dir }}/conf/ansible.yml"
+  remote_src: yes
   
 - name: create temp dir
   file:
