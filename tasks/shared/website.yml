@@ -47,8 +47,6 @@
     name: uniqconsulting.nginx
   vars: 
     nginx_geoip: yes
-    nginx_geoip_maps: "{{ website_geoip_maps }}"
-    nginx_maxmind_license_key: "{{ website_maxmind_license_key }}"
     nginx_update_only: yes
     nginx_vhosts:
     - type: web
