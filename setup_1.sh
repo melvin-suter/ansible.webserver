@@ -19,3 +19,6 @@ ansible-galaxy install $role_name
 cp roles/$role_name/tests/vars/99_$role_name.yml vars/
 cp roles/$role_name/tests/$role_install_name install_1_appliance.yml
 
+# Tasks
+cp roles/$role_name/tests/task_X_deploy-websites.yml task_2_deploy-websites.yml
+cp roles/$role_name/tests/task_X_backup-websites.yml task_3_backup-websites.yml

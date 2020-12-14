@@ -1,0 +1,54 @@
+---
+
+- name: calc facts
+  set_fact:
+    vhost_dir: "/srv/www/{{ item }}"
+    backup_date: "{{ ansible_date_time.iso8601_basic_short }}"
+
+- name: include dump-config
+  include_vars: "{{ vhost_dir }}/conf/ansible.yml"
+  
+- name: create temp dir
+  file:
+    path: "{{ vhost_dir }}/backup_{{ backup_date }}"
+    state: directory
+
+- name: dump sql
+  shell: |
+    mysqldump {{ vhost.database_name }} > {{ vhost_dir }}/backup_{{ backup_date }}/{{ vhost.database_name }}.sql
+    gzip {{ vhost_dir }}/backup_{{ backup_date }}/{{ vhost.database_name }}.sql
+
+- name: check if backup script exists
+  stat:
+    path: "{{ vhost_dir }}/backup.sh"
+  register: backup_script
+
+- name: run backup script
+  shell: "bash {{ vhost_dir }}/backup.sh"
+  when: backup_script.stat.exists
+
+- name: check backup dir
+  file:
+    path: "/srv/backups/{{ item }}"
+    state: directory
+
+- name: archive backup
+  archive:
+    path:
+    - "{{ vhost_dir }}/backup_{{ backup_date }}"
+    dest: "/srv/backups/{{ item }}/{{ item }}_{{ ansible_date_time.day }}.tar.gz"
+    format: gz
+
+- name: copy backup if monthly
+  copy:
+    remote_src: yes
+    src: "/srv/backups/{{ item }}/{{ item }}_{{ ansible_date_time.day }}.tar.gz"
+    dest: "/srv/backups/{{ item }}/{{ item }}_{{ ansible_date_time.month }}.tar.gz"
+  when:  ansible_date_time.day == 1
+
+- name: remove temp dir
+  file:
+    path: "{{ vhost_dir }}/backup_{{ backup_date }}"
+    state: absent
+
+...

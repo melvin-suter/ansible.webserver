@@ -1,0 +1,10 @@
+#!/usr/bin/ansible-playbook 
+---
+- name: Webserver Setup
+  hosts: localhost
+  tasks:
+  - name: include backup-website.yml
+    include_tasks: 'roles/melvin_suter.webserver/tasks/independent/backup-website.yml'
+    loop: "{{ lookup('fileglob', '/srv/www/*', wantlist=True) }}"
+
+...
