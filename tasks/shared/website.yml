@@ -40,7 +40,7 @@
     state: directory
     owner: nginx
     group: nginx
-    path: "{{ webserver_document_root}}/{{ vhost.name }}/{{ vhost.name }}"
+    path: "{{ webserver_document_root}}/{{ vhost.name }}/{{ item }}"
   loop:
   - www
   - www/public
@@ -110,8 +110,8 @@
 - name: symlink log
   file:
     state: link
-    src: /var/log/nginx/{{ vhost.name }}_{{ vhost.name }}
-    dest: "{{ webserver_document_root}}/{{ vhost.name }}/log/{{ vhost.name }}"
+    src: /var/log/nginx/{{ vhost.name }}_{{ item }}
+    dest: "{{ webserver_document_root}}/{{ vhost.name }}/log/{{ item }}"
     force: yes
   loop:
   - access.log

@@ -2,7 +2,7 @@
 
 - name: calc facts
   set_fact:
-    vhost_dir: "{{ item.path }}"
+    vhost_dir: "{{ vhost.name.path }}"
     backup_date: "{{ ansible_date_time.iso8601_basic_short }}"
 
 - name: include dump-config
@@ -30,21 +30,21 @@
 
 - name: check backup dir
   file:
-    path: "/srv/backups/{{ item }}"
+    path: "/srv/backups/{{ vhost.name }}"
     state: directory
 
 - name: archive backup
   archive:
     path:
     - "{{ vhost_dir }}/backup_{{ backup_date }}"
-    dest: "/srv/backups/{{ item }}/{{ item }}_{{ ansible_date_time.day }}.tar.gz"
+    dest: "/srv/backups/{{ vhost.name }}/{{ vhost.name }}_{{ ansible_date_time.day }}.tar.gz"
     format: gz
 
 - name: copy backup if monthly
   copy:
     remote_src: yes
-    src: "/srv/backups/{{ item }}/{{ item }}_{{ ansible_date_time.day }}.tar.gz"
-    dest: "/srv/backups/{{ item }}/{{ item }}_{{ ansible_date_time.month }}.tar.gz"
+    src: "/srv/backups/{{ vhost.name }}/{{ vhost.name }}_{{ ansible_date_time.day }}.tar.gz"
+    dest: "/srv/backups/{{ vhost.name }}/{{ vhost.name }}_{{ ansible_date_time.month }}.tar.gz"
   when:  ansible_date_time.day == 1
 
 - name: remove temp dir
