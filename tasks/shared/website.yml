@@ -5,17 +5,22 @@
     path: "{{ webserver_document_root}}/{{ website.name }}/conf/ansible.conf"
   register: role_stat_result
 
-- name: include dump-config
-  include_vars: "{{ webserver_document_root}}/{{ website.name }}/conf/ansible.conf"
+- block:
+  - name: include dump-config
+    include_vars: "{{ webserver_document_root}}/{{ website.name }}/conf/ansible.conf"
+
+  - name: include dump-config into vhost
+    set_fact:
+      inc_website: "{{ vhost | combine(website) }}"
+    
+  - name: calculate configs
+    set_fact:
+      vhost: "{{ webserver_site_default | combine(inc_website) }}"
+      tmp_vhost:
+        database_name: "{{ ((inc_website.database_name | default(inc_website.name)) | replace('.', '') | replace('-', '')  )[:15] }}"
+        database_password: "{{ inc_website.database_password | default( lookup('password', '/dev/null length=15 chars=scii_uppercase,digits') ) }}"
   when: role_stat_result.stat.exists
-
-- name: include dump-config into vhost
-  set_fact:
-    website: "{{ vhost | combine(website) }}"
-  when: role_stat_result.stat.exists
-   
-
-
+  #END BLOCK
 
 - name: calculate configs
   set_fact:
@@ -23,6 +28,7 @@
     tmp_vhost:
       database_name: "{{ ((website.database_name | default(website.name)) | replace('.', '') | replace('-', '')  )[:15] }}"
       database_password: "{{ website.database_password | default( lookup('password', '/dev/null length=15 chars=scii_uppercase,digits') ) }}"
+  when: not role_stat_result.stat.exists
 
 - name: set vhost
   set_fact:
