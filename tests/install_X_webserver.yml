@@ -1,7 +1,7 @@
 #!/usr/bin/ansible-playbook 
 ---
-- name: ROLENAME Setup
+- name: Webserver Setup
   hosts: localhost
   roles:
-    - uniqconsulting.ROLENAME
+    - melvin_suter.webserver
 ...

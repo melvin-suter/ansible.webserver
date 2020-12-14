@@ -1,9 +1,12 @@
 ---
-# Here belong all variables, that can be changed by a vars-file,
-# a playbook or a include.
-
+# Default
 run_systemcheck: yes
 install_openvmtools: yes
 additional_open_ports: []
+
+# Role Specific
+webserver_update_only: false
+webserver_sites: []
+webserver_default_geoip_map: public
 
 ...

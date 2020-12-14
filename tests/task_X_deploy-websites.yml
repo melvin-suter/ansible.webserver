@@ -1,0 +1,9 @@
+#!/usr/bin/ansible-playbook 
+---
+- name: Webserver Setup
+  hosts: localhost
+  roles:
+    - melvin_suter.webserver
+  vars:
+    webserver_update_only: true
+...

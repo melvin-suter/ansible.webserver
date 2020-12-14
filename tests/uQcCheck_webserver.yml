@@ -4,11 +4,12 @@
   hosts: localhost
   vars:
     running_services:
-    - SERVICE1
-    - SERVICE2
+    - nginx
+    - mariadb
+    - php80-php-fpm
+    - php73-php-fpm
 
-    files_existing:
-    - /tmp/example
+    files_existing: []
   tasks:
   - name: get service facts
     service_facts:

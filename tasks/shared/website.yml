@@ -1,0 +1,93 @@
+---
+
+- name: calculate configs
+  set_fact:
+    vhost: "{{ webserver_site_default | combine(website) }}"
+    tmp_vhost:
+      database_name: "{{ ((website.database_name | default(website.name)) | replace('.', '') | replace('-', '')  )[:15] }}"
+      database_password: "{{ website.database_password | default( lookup('password', '/dev/null length=15 chars=scii_uppercase,digits') ) }}"
+
+- name: set vhost
+  set_fact:
+    vhost: "{{ tmp_vhost | combine(vhost) }}"
+    
+- name: create vhost dir
+  file:
+    state: directory
+    owner: nginx
+    group: nginx
+    path: "{{ webserver_document_root}}/{{ vhost.name }}/{{ item }}"
+  loop:
+  - www
+  - www/public
+  - log
+  - conf
+
+- name: dump config
+  copy:
+    content: "{{ vhost | to_nice_yaml }}"
+    dest: "{{ webserver_document_root}}/{{ vhost.name }}/conf/ansible.conf"
+
+- name: generate database
+  include_role:
+    name: uniqconsulting.mariadb
+  vars: 
+    mariadb_update_only: yes
+    mariadb_databases:
+    - name: "{{ vhost.database_name }}"
+    mariadb_users_create:
+    - name: "{{ vhost.database_name }}"
+      password: "{{ vhost.database_password }}"
+      privs:
+      - "{{ vhost.database_name }}.*:ALL"
+      append_privs: no
+
+- name: generate nginx conf
+  include_role:
+    name: uniqconsulting.nginx
+  vars: 
+    nginx_geoip: yes
+    nginx_geoip_maps: "{{ website_geoip_maps }}"
+    nginx_maxmind_license_key: "{{ website_maxmind_license_key }}"
+    nginx_update_only: yes
+    nginx_vhosts:
+    - type: web
+      server_name: "{{ [vhost.name] + vhost.alias }}"
+      ssl_certificate: "{{ vhost.ssl_cert }}"
+      ssl_certificate_key: "{{ vhost.ssl_key }}"
+      default: "{{ vhost.default }}"
+      locations: "{{ vhost.locations }}"
+      document_root: "{{ webserver_document_root}}/{{ vhost.name }}/www/public"
+      php_version: "{{ vhost.php_version }}"
+      geoip_map: "{{ vhost.geoip_map }}"
+    nginx_default_document_root: "{{ webserver_document_root }}"
+
+- name: symlink ssl cert
+  file:
+    state: link
+    src: "{{ vhost.ssl_cert }}"
+    dest: "{{ webserver_document_root}}/{{ vhost.name }}/conf/cert.pem"
+
+- name: symlink ssl key
+  file:
+    state: link
+    src: "{{ vhost.ssl_key }}"
+    dest: "{{ webserver_document_root}}/{{ vhost.name }}/conf/key.pem"
+
+- name: symlink nginx conf
+  file:
+    state: link
+    src: /etc/nginx/conf.d/{{ vhost.name }}.conf
+    dest: "{{ webserver_document_root}}/{{ vhost.name }}/conf/nginx.conf"
+
+- name: symlink log
+  file:
+    state: link
+    src: /var/log/nginx/{{ vhost.name }}_{{ item }}
+    dest: "{{ webserver_document_root}}/{{ vhost.name }}/log/{{ item }}"
+    force: yes
+  loop:
+  - access.log
+  - error.log
+
+...

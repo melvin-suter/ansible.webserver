@@ -5,7 +5,7 @@
 
 # Change needed roles here
 - name: download dependencies from galaxy
-  shell: ansible-galaxy install uniqconsulting.os_basic uniqconsulting.open_vm_tools uniqconsulting.firewall uniqconsulting.nginx uniqconsulting.mariadb
+  shell: ansible-galaxy install uniqconsulting.os_basic uniqconsulting.open_vm_tools uniqconsulting.firewall uniqconsulting.nginx uniqconsulting.php uniqconsulting.mariadb
 
 # Include all roles like this:
 
@@ -19,16 +19,42 @@
     osbasic_package_cleanup: true
     osbasic_package_upgrade: all
     osbasic_epel: true
+  when: not webserver_update_only
 
 - name: uniqconsulting.open_vm_tools
   include_role:
     name: uniqconsulting.open_vm_tools
-  when: install_openvmtools
+  when: install_openvmtools and not webserver_update_only
       
 - name: uniqconsulting.firewall
   include_role:
     name: uniqconsulting.firewall
   vars:
     firewall_open_ports: "{{ role_ports + additional_open_ports }}"
+  when: not webserver_update_only
+
+
+- name: create nginx user (needed for php)
+  user:
+    name: nginx
+    system: yes
+    shell: /usr/sbin/nologin
+    create_home: no
+  when: not webserver_update_only
+  
+- name: uniqconsulting.php
+  include_role:
+    name: uniqconsulting.php
+  when: not webserver_update_only
+  
+- name: uniqconsulting.nginx
+  include_role:
+    name: uniqconsulting.nginx
+  vars: 
+    nginx_geoip: yes
+    nginx_vhosts: []
+    nginx_default_document_root: "{{ webserver_document_root }}"
+  when: not webserver_update_only
+      
 
 ...
