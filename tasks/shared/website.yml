@@ -2,12 +2,12 @@
   
 - name: get dump-config stats
   stat:
-    path: "{{ webserver_document_root}}/{{ website.name }}/conf/ansible.conf"
+    path: "{{ webserver_document_root}}/{{ website.name }}/conf/ansible.yml"
   register: role_stat_result
 
 - block:
   - name: include dump-config
-    include_vars: "{{ webserver_document_root}}/{{ website.name }}/conf/ansible.conf"
+    include_vars: "{{ webserver_document_root}}/{{ website.name }}/conf/ansible.yml"
 
   - name: include dump-config into vhost
     set_fact:
@@ -55,7 +55,7 @@
 - name: write dump-config
   copy:
     content: "{{ dumpconf | to_nice_yaml }}"
-    dest: "{{ webserver_document_root}}/{{ vhost.name }}/conf/ansible.conf"
+    dest: "{{ webserver_document_root}}/{{ vhost.name }}/conf/ansible.yml"
 
 - name: generate database
   include_role:
