@@ -1,4 +1,21 @@
 ---
+  
+- name: get dump-config stats
+  stat:
+    path: "{{ webserver_document_root}}/{{ vhost.name }}/conf/ansible.conf"
+  register: role_stat_result
+
+- name: include dump-config
+  include_vars: "{{ webserver_document_root}}/{{ vhost.name }}/conf/ansible.conf"
+  when: role_stat_result.stat.exists
+
+- name: include dump-config into vhost
+  set_fact:
+    website: "{{ vhost | combine(website) }}"
+  when: role_stat_result.stat.exists
+   
+
+
 
 - name: calculate configs
   set_fact:
@@ -10,6 +27,7 @@
 - name: set vhost
   set_fact:
     vhost: "{{ tmp_vhost | combine(vhost) }}"
+    dumpconf: "{{ tmp_vhost | combine(website) }}"
     
 - name: create vhost dir
   file:
@@ -23,9 +41,14 @@
   - log
   - conf
 
-- name: dump config
+- name: set dump-config
+  set_fact:
+    dumpconf:
+      vhost: "{{ dumpconf }}"
+    
+- name: write dump-config
   copy:
-    content: "{{ vhost | to_nice_yaml }}"
+    content: "{{ dumpconf | to_nice_yaml }}"
     dest: "{{ webserver_document_root}}/{{ vhost.name }}/conf/ansible.conf"
 
 - name: generate database
