@@ -2,7 +2,7 @@
 
 - name: calc facts
   set_fact:
-    vhost_dir: "{{ vhost.name.path }}"
+    vhost_dir: "{{ item.path }}"
     backup_date: "{{ ansible_date_time.iso8601_basic_short }}"
 
 - name: include dump-config
