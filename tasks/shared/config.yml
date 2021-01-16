@@ -6,11 +6,11 @@
     loop_var: website 
   loop: "{{ webserver_sites }}"
 
-  - name: update backup cronjob
-    cron:
-      name: "webserver-backup"
-      minute: "5"
-      hour: "0"
-      job: "ansible-playbook /etc/ansible/projects/uqcSetup/task_3_backup-websites.yml > /dev/null"
+- name: update backup cronjob
+  cron:
+    name: "webserver-backup"
+    minute: "5"
+    hour: "0"
+    job: "ansible-playbook /etc/ansible/projects/uqcSetup/task_3_backup-websites.yml > /dev/null"
 
 ...
