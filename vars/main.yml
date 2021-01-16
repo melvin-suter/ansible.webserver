@@ -35,7 +35,7 @@ webserver_site_default:
   locations:
   - path: "~ ^(.*)$"
     custom_options:
-    - "try_files $uri $uri/ /index.php?p=$uri&$args"
+    - "try_files $uri $uri/ /index.php?$uri&$args"
 
 webserver_document_root: /srv/www
 
